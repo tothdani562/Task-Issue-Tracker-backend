@@ -82,6 +82,9 @@ model Task {
 
   @@index([projectId])
   @@index([assignedUserId])
-  @@index([status])
-  @@index([priority])
+  @@index([projectId, createdAt])
+  @@index([projectId, assignedUserId])
+  @@index([projectId, status])
+  @@index([projectId, priority])
+  @@index([projectId, dueDate])
 }

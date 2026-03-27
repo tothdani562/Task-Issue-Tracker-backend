@@ -14,6 +14,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const projects_service_1 = require("../projects/projects.service");
 const users_service_1 = require("../users/users.service");
+const list_tasks_query_dto_1 = require("./dto/list-tasks-query.dto");
 let TasksService = class TasksService {
     prisma;
     projectsService;
@@ -45,19 +46,15 @@ let TasksService = class TasksService {
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;
         const skip = (page - 1) * limit;
-        const where = {
-            projectId,
-            status: query.status,
-            priority: query.priority,
-            assignedUserId: query.assigneeId,
-        };
+        const where = this.buildTaskListWhere(projectId, query);
+        const orderBy = this.buildTaskListOrderBy(query);
         const [total, items] = await this.prisma.$transaction([
             this.prisma.task.count({ where }),
             this.prisma.task.findMany({
                 where,
                 skip,
                 take: limit,
-                orderBy: { createdAt: 'desc' },
+                orderBy,
             }),
         ]);
         return {
@@ -137,6 +134,44 @@ let TasksService = class TasksService {
         if (!member) {
             throw new common_1.BadRequestException('Assigned user must be a project member');
         }
+    }
+    buildTaskListWhere(projectId, query) {
+        const where = { projectId };
+        if (query.status) {
+            where.status = query.status;
+        }
+        if (query.priority) {
+            where.priority = query.priority;
+        }
+        if (query.assigneeId) {
+            where.assignedUserId = query.assigneeId;
+        }
+        const dueFromDate = query.dueFrom ? new Date(query.dueFrom) : undefined;
+        const dueToDate = query.dueTo ? new Date(query.dueTo) : undefined;
+        if (dueFromDate && dueToDate && dueFromDate > dueToDate) {
+            throw new common_1.BadRequestException('dueFrom must be earlier than dueTo');
+        }
+        if (dueFromDate || dueToDate) {
+            where.dueDate = {};
+            if (dueFromDate) {
+                where.dueDate.gte = dueFromDate;
+            }
+            if (dueToDate) {
+                where.dueDate.lte = dueToDate;
+            }
+        }
+        return where;
+    }
+    buildTaskListOrderBy(query) {
+        const sortBy = query.sortBy ?? list_tasks_query_dto_1.TaskSortBy.CREATED_AT;
+        const sortOrder = query.sortOrder === list_tasks_query_dto_1.SortOrder.ASC ? 'asc' : 'desc';
+        const orderBy = [
+            { [sortBy]: sortOrder },
+        ];
+        if (sortBy !== list_tasks_query_dto_1.TaskSortBy.CREATED_AT) {
+            orderBy.push({ createdAt: 'desc' });
+        }
+        return orderBy;
     }
 };
 exports.TasksService = TasksService;

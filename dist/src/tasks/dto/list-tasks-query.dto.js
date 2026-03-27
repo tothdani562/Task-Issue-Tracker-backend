@@ -9,14 +9,30 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ListTasksQueryDto = void 0;
+exports.ListTasksQueryDto = exports.SortOrder = exports.TaskSortBy = void 0;
 const client_1 = require("@prisma/client");
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
+var TaskSortBy;
+(function (TaskSortBy) {
+    TaskSortBy["CREATED_AT"] = "createdAt";
+    TaskSortBy["DUE_DATE"] = "dueDate";
+    TaskSortBy["PRIORITY"] = "priority";
+    TaskSortBy["STATUS"] = "status";
+})(TaskSortBy || (exports.TaskSortBy = TaskSortBy = {}));
+var SortOrder;
+(function (SortOrder) {
+    SortOrder["ASC"] = "asc";
+    SortOrder["DESC"] = "desc";
+})(SortOrder || (exports.SortOrder = SortOrder = {}));
 class ListTasksQueryDto {
     status;
     priority;
     assigneeId;
+    dueFrom;
+    dueTo;
+    sortBy;
+    sortOrder;
     page;
     limit;
 }
@@ -36,6 +52,26 @@ __decorate([
     (0, class_validator_1.IsUUID)('4'),
     __metadata("design:type", String)
 ], ListTasksQueryDto.prototype, "assigneeId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], ListTasksQueryDto.prototype, "dueFrom", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], ListTasksQueryDto.prototype, "dueTo", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(TaskSortBy),
+    __metadata("design:type", String)
+], ListTasksQueryDto.prototype, "sortBy", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(SortOrder),
+    __metadata("design:type", String)
+], ListTasksQueryDto.prototype, "sortOrder", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),

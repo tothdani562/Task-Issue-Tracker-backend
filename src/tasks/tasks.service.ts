@@ -8,7 +8,11 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { ProjectsService } from '../projects/projects.service';
 import { UsersService } from '../users/users.service';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { ListTasksQueryDto } from './dto/list-tasks-query.dto';
+import {
+  ListTasksQueryDto,
+  SortOrder,
+  TaskSortBy,
+} from './dto/list-tasks-query.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
@@ -50,12 +54,8 @@ export class TasksService {
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
 
-    const where: Prisma.TaskWhereInput = {
-      projectId,
-      status: query.status,
-      priority: query.priority,
-      assignedUserId: query.assigneeId,
-    };
+    const where = this.buildTaskListWhere(projectId, query);
+    const orderBy = this.buildTaskListOrderBy(query);
 
     const [total, items] = await this.prisma.$transaction([
       this.prisma.task.count({ where }),
@@ -63,7 +63,7 @@ export class TasksService {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
       }),
     ]);
 
@@ -170,5 +170,63 @@ export class TasksService {
     if (!member) {
       throw new BadRequestException('Assigned user must be a project member');
     }
+  }
+
+  private buildTaskListWhere(
+    projectId: string,
+    query: ListTasksQueryDto,
+  ): Prisma.TaskWhereInput {
+    const where: Prisma.TaskWhereInput = { projectId };
+
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    if (query.priority) {
+      where.priority = query.priority;
+    }
+
+    if (query.assigneeId) {
+      where.assignedUserId = query.assigneeId;
+    }
+
+    const dueFromDate = query.dueFrom ? new Date(query.dueFrom) : undefined;
+    const dueToDate = query.dueTo ? new Date(query.dueTo) : undefined;
+
+    if (dueFromDate && dueToDate && dueFromDate > dueToDate) {
+      throw new BadRequestException('dueFrom must be earlier than dueTo');
+    }
+
+    if (dueFromDate || dueToDate) {
+      where.dueDate = {};
+
+      if (dueFromDate) {
+        where.dueDate.gte = dueFromDate;
+      }
+
+      if (dueToDate) {
+        where.dueDate.lte = dueToDate;
+      }
+    }
+
+    return where;
+  }
+
+  private buildTaskListOrderBy(
+    query: ListTasksQueryDto,
+  ): Prisma.TaskOrderByWithRelationInput[] {
+    const sortBy = query.sortBy ?? TaskSortBy.CREATED_AT;
+    const sortOrder: Prisma.SortOrder =
+      query.sortOrder === SortOrder.ASC ? 'asc' : 'desc';
+
+    const orderBy: Prisma.TaskOrderByWithRelationInput[] = [
+      { [sortBy]: sortOrder } as Prisma.TaskOrderByWithRelationInput,
+    ];
+
+    if (sortBy !== TaskSortBy.CREATED_AT) {
+      orderBy.push({ createdAt: 'desc' });
+    }
+
+    return orderBy;
   }
 }

@@ -1,6 +1,26 @@
 import { TaskPriority, TaskStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
+
+export enum TaskSortBy {
+  CREATED_AT = 'createdAt',
+  DUE_DATE = 'dueDate',
+  PRIORITY = 'priority',
+  STATUS = 'status',
+}
+
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
 
 export class ListTasksQueryDto {
   @IsOptional()
@@ -14,6 +34,22 @@ export class ListTasksQueryDto {
   @IsOptional()
   @IsUUID('4')
   assigneeId?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dueFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dueTo?: string;
+
+  @IsOptional()
+  @IsEnum(TaskSortBy)
+  sortBy?: TaskSortBy;
+
+  @IsOptional()
+  @IsEnum(SortOrder)
+  sortOrder?: SortOrder;
 
   @IsOptional()
   @Type(() => Number)

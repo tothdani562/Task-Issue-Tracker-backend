@@ -68,4 +68,6 @@ export declare class TasksService {
     removeForProject(projectId: string, taskId: string, userId: string): Promise<void>;
     private getTaskForProjectOrThrow;
     private assertAssigneeIsProjectMember;
+    private buildTaskListWhere;
+    private buildTaskListOrderBy;
 }
