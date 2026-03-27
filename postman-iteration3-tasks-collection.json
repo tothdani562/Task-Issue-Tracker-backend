@@ -1,0 +1,706 @@
+{
+  "info": {
+    "_postman_id": "7c3073f9-70b9-4f3a-8a20-iteration3-tasks",
+    "name": "Nest-Prisma Iteration 3 - Tasks (CRUD, Filter, Pagination)",
+    "description": "Standalone test flow for iteration 3. Includes setup (owner/member/project) and task CRUD + filters + pagination checks.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 Setup",
+      "item": [
+        {
+          "name": "01 Register owner",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('ownerEmail', `owner_${Date.now()}@example.com`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Owner token and user ID are saved', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.accessToken).to.be.a('string').and.not.empty;",
+                  "  pm.expect(jsonData.user.id).to.be.a('string').and.not.empty;",
+                  "  pm.environment.set('ownerToken', jsonData.accessToken);",
+                  "  pm.environment.set('ownerUserId', jsonData.user.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{ownerEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "02 Register member",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('memberEmail', `member_${Date.now()}@example.com`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Member token and user ID are saved', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.accessToken).to.be.a('string').and.not.empty;",
+                  "  pm.expect(jsonData.user.id).to.be.a('string').and.not.empty;",
+                  "  pm.environment.set('memberToken', jsonData.accessToken);",
+                  "  pm.environment.set('memberUserId', jsonData.user.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{memberEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "03 Create project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Project ID is saved', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.id).to.be.a('string').and.not.empty;",
+                  "  pm.environment.set('projectId', jsonData.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tasks Iteration 3 Project\",\n  \"description\": \"Setup project for task tests\"\n}"
+            },
+            "url": "{{baseUrl}}/projects"
+          }
+        },
+        {
+          "name": "04 Add member to project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Member add response is valid', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.userId).to.equal(pm.environment.get('memberUserId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{memberUserId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/projects/{{projectId}}/members"
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 Task CRUD",
+      "item": [
+        {
+          "name": "05 Create task #1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Task #1 is created and saved', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.id).to.be.a('string').and.not.empty;",
+                  "  pm.expect(jsonData.data.status).to.equal('TODO');",
+                  "  pm.expect(jsonData.data.priority).to.equal('HIGH');",
+                  "  pm.environment.set('taskId', jsonData.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Iteration 3 - Task 1\",\n  \"description\": \"Primary task for CRUD checks\",\n  \"status\": \"TODO\",\n  \"priority\": \"HIGH\",\n  \"assignedUserId\": \"{{memberUserId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks"
+          }
+        },
+        {
+          "name": "06 Create task #2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Task #2 is created and saved', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.id).to.be.a('string').and.not.empty;",
+                  "  pm.expect(jsonData.data.status).to.equal('IN_PROGRESS');",
+                  "  pm.expect(jsonData.data.priority).to.equal('LOW');",
+                  "  pm.environment.set('task2Id', jsonData.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Iteration 3 - Task 2\",\n  \"description\": \"Secondary task for filter and pagination checks\",\n  \"status\": \"IN_PROGRESS\",\n  \"priority\": \"LOW\",\n  \"assignedUserId\": \"{{ownerUserId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks"
+          }
+        },
+        {
+          "name": "07 List tasks (basic)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Returns items and pagination meta', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.items).to.be.an('array');",
+                  "  pm.expect(jsonData.data.meta).to.be.an('object');",
+                  "  pm.expect(jsonData.data.meta).to.have.property('total');",
+                  "  pm.expect(jsonData.data.meta).to.have.property('page');",
+                  "  pm.expect(jsonData.data.meta).to.have.property('limit');",
+                  "  pm.expect(jsonData.data.meta).to.have.property('hasNext');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks"
+          }
+        },
+        {
+          "name": "08 Get task by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Task ID matches requested ID', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.id).to.equal(pm.environment.get('taskId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks/{{taskId}}"
+          }
+        },
+        {
+          "name": "09 Update task #1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Task status is updated to DONE', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.id).to.equal(pm.environment.get('taskId'));",
+                  "  pm.expect(jsonData.data.status).to.equal('DONE');",
+                  "  pm.expect(jsonData.data.priority).to.equal('HIGH');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"DONE\",\n  \"priority\": \"HIGH\"\n}"
+            },
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks/{{taskId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Filters",
+      "item": [
+        {
+          "name": "10 Filter by status=DONE",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All returned tasks are DONE', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.items).to.be.an('array');",
+                  "  jsonData.data.items.forEach(function (task) {",
+                  "    pm.expect(task.status).to.equal('DONE');",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks?status=DONE"
+          }
+        },
+        {
+          "name": "11 Filter by priority=HIGH",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All returned tasks are HIGH priority', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.items).to.be.an('array');",
+                  "  jsonData.data.items.forEach(function (task) {",
+                  "    pm.expect(task.priority).to.equal('HIGH');",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks?priority=HIGH"
+          }
+        },
+        {
+          "name": "12 Filter by assigneeId=memberUserId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All returned tasks are assigned to member', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.items).to.be.an('array');",
+                  "  jsonData.data.items.forEach(function (task) {",
+                  "    pm.expect(task.assignedUserId).to.equal(pm.environment.get('memberUserId'));",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks?assigneeId={{memberUserId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Pagination",
+      "item": [
+        {
+          "name": "13 Create task #3 (for pagination)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Task #3 ID is saved', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.id).to.be.a('string').and.not.empty;",
+                  "  pm.environment.set('task3Id', jsonData.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Iteration 3 - Task 3\",\n  \"status\": \"TODO\",\n  \"priority\": \"MEDIUM\"\n}"
+            },
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks"
+          }
+        },
+        {
+          "name": "14 List tasks page=1 limit=2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Pagination meta for page 1 limit 2 is valid', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.meta.page).to.equal(1);",
+                  "  pm.expect(jsonData.data.meta.limit).to.equal(2);",
+                  "  pm.expect(jsonData.data.items.length).to.be.at.most(2);",
+                  "  pm.expect(jsonData.data.meta.total).to.be.a('number');",
+                  "  pm.expect(jsonData.data.meta.hasNext).to.be.a('boolean');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks?page=1&limit=2"
+          }
+        },
+        {
+          "name": "15 List tasks page=2 limit=2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Pagination meta for page 2 limit 2 is valid', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.meta.page).to.equal(2);",
+                  "  pm.expect(jsonData.data.meta.limit).to.equal(2);",
+                  "  pm.expect(jsonData.data.items).to.be.an('array');",
+                  "  pm.expect(jsonData.data.meta.total).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks?page=2&limit=2"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Cleanup",
+      "item": [
+        {
+          "name": "16 Delete task #2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Delete response is valid', function () {",
+                  "  const jsonData = pm.response.json();",
+                  "  pm.expect(jsonData.success).to.equal(true);",
+                  "  pm.expect(jsonData.data.deleted).to.equal(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ownerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/projects/{{projectId}}/tasks/{{task2Id}}"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "password",
+      "value": "Password123"
+    },
+    {
+      "key": "ownerEmail",
+      "value": ""
+    },
+    {
+      "key": "memberEmail",
+      "value": ""
+    },
+    {
+      "key": "ownerToken",
+      "value": ""
+    },
+    {
+      "key": "memberToken",
+      "value": ""
+    },
+    {
+      "key": "ownerUserId",
+      "value": ""
+    },
+    {
+      "key": "memberUserId",
+      "value": ""
+    },
+    {
+      "key": "projectId",
+      "value": ""
+    },
+    {
+      "key": "taskId",
+      "value": ""
+    },
+    {
+      "key": "task2Id",
+      "value": ""
+    },
+    {
+      "key": "task3Id",
+      "value": ""
+    }
+  ]
+}
