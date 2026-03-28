@@ -21,6 +21,7 @@ exports.TasksModule = TasksModule = __decorate([
         imports: [common_module_1.CommonModule, projects_module_1.ProjectsModule, users_module_1.UsersModule],
         controllers: [tasks_controller_1.TasksController],
         providers: [tasks_service_1.TasksService],
+        exports: [tasks_service_1.TasksService],
     })
 ], TasksModule);
 //# sourceMappingURL=tasks.module.js.map

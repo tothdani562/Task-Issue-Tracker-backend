@@ -156,6 +156,23 @@ let ProjectsService = class ProjectsService {
             throw new common_1.ForbiddenException('Only the project owner can perform this action');
         }
     }
+    async isUserProjectMember(projectId, userId) {
+        const project = await this.prisma.project.findFirst({
+            where: {
+                id: projectId,
+                OR: [{ ownerId: userId }, { members: { some: { userId } } }],
+            },
+            select: { id: true },
+        });
+        return !!project;
+    }
+    async isUserProjectOwner(projectId, userId) {
+        const project = await this.prisma.project.findUnique({
+            where: { id: projectId },
+            select: { ownerId: true },
+        });
+        return project?.ownerId === userId;
+    }
 };
 exports.ProjectsService = ProjectsService;
 exports.ProjectsService = ProjectsService = __decorate([

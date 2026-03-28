@@ -56,4 +56,6 @@ export declare class ProjectsService {
     removeMember(projectId: string, userId: string, memberUserId: string): Promise<void>;
     assertProjectAccess(projectId: string, userId: string): Promise<void>;
     assertProjectOwner(projectId: string, userId: string): Promise<void>;
+    isUserProjectMember(projectId: string, userId: string): Promise<boolean>;
+    isUserProjectOwner(projectId: string, userId: string): Promise<boolean>;
 }

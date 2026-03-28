@@ -178,4 +178,31 @@ export class ProjectsService {
       );
     }
   }
+
+  async isUserProjectMember(
+    projectId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const project = await this.prisma.project.findFirst({
+      where: {
+        id: projectId,
+        OR: [{ ownerId: userId }, { members: { some: { userId } } }],
+      },
+      select: { id: true },
+    });
+
+    return !!project;
+  }
+
+  async isUserProjectOwner(
+    projectId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const project = await this.prisma.project.findUnique({
+      where: { id: projectId },
+      select: { ownerId: true },
+    });
+
+    return project?.ownerId === userId;
+  }
 }

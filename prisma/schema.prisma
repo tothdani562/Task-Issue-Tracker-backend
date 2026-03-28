@@ -37,6 +37,7 @@ model User {
   ownedProjects      Project[]       @relation("ProjectOwner")
   projectMemberships ProjectMember[] @relation("ProjectMemberUser")
   assignedTasks      Task[]          @relation("TaskAssignee")
+  comments           Comment[]       @relation("CommentAuthor")
 }
 
 model Project {
@@ -79,6 +80,7 @@ model Task {
   updatedAt      DateTime     @updatedAt
   project        Project      @relation("ProjectTasks", fields: [projectId], references: [id], onDelete: Cascade)
   assignedUser   User?        @relation("TaskAssignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  comments       Comment[]     @relation("TaskComments")
 
   @@index([projectId])
   @@index([assignedUserId])
@@ -87,4 +89,19 @@ model Task {
   @@index([projectId, status])
   @@index([projectId, priority])
   @@index([projectId, dueDate])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  taskId    String
+  authorId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  task      Task     @relation("TaskComments", fields: [taskId], references: [id], onDelete: Cascade)
+  author    User     @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([authorId])
+  @@index([taskId, createdAt])
 }

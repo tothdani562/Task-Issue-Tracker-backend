@@ -177,4 +177,134 @@ describe('AppController (e2e)', () => {
       true,
     );
   });
+
+  it('comments: user can comment on tasks, only author/owner can modify', async () => {
+    const seed = Date.now();
+    const password = 'Password123';
+
+    const owner = await registerUser(
+      app,
+      `owner_comment_${seed}@example.com`,
+      password,
+    );
+    const member = await registerUser(
+      app,
+      `member_comment_${seed}@example.com`,
+      password,
+    );
+
+    // Owner creates project
+    const projectResponse = await request(app.getHttpServer())
+      .post('/projects')
+      .set('Authorization', `Bearer ${owner.accessToken}`)
+      .send({
+        name: 'Comments Test Project',
+        description: 'Comments iteration test',
+      })
+      .expect(201);
+    const projectId = (
+      projectResponse.body as { success: boolean; data: { id: string } }
+    ).data.id;
+
+    // Owner creates task
+    const taskResponse = await request(app.getHttpServer())
+      .post(`/projects/${projectId}/tasks`)
+      .set('Authorization', `Bearer ${owner.accessToken}`)
+      .send({ title: 'Test Task', description: 'Task for comments' })
+      .expect(201);
+    const taskId = (
+      taskResponse.body as { success: boolean; data: { id: string } }
+    ).data.id;
+
+    // Add member to project
+    await request(app.getHttpServer())
+      .post(`/projects/${projectId}/members`)
+      .set('Authorization', `Bearer ${owner.accessToken}`)
+      .send({ userId: member.user.id })
+      .expect(201);
+
+    // Member can comment on task
+    interface IComment {
+      id: string;
+      content: string;
+      authorId: string;
+    }
+    const memberCommentResponse = await request(app.getHttpServer())
+      .post(`/tasks/${taskId}/comments`)
+      .set('Authorization', `Bearer ${member.accessToken}`)
+      .send({ content: 'Member comment' })
+      .expect(201);
+    const memberCommentBody = memberCommentResponse.body as IComment;
+    const memberCommentId = memberCommentBody.id;
+
+    // Owner can also comment on task (they are project owner)
+    const ownerCommentResponse = await request(app.getHttpServer())
+      .post(`/tasks/${taskId}/comments`)
+      .set('Authorization', `Bearer ${owner.accessToken}`)
+      .send({ content: 'Owner comment' })
+      .expect(201);
+    const ownerCommentBody = ownerCommentResponse.body as IComment;
+    const ownerCommentId = ownerCommentBody.id;
+
+    // List comments on task
+    interface CommentsListResponse {
+      data: { id: string }[];
+      pagination: { total: number };
+    }
+    const listCommentsResponse = await request(app.getHttpServer())
+      .get(`/tasks/${taskId}/comments?page=1&limit=20`)
+      .set('Authorization', `Bearer ${member.accessToken}`)
+      .expect(200);
+    const commentsList = listCommentsResponse.body as CommentsListResponse;
+    expect(commentsList.data || commentsList.pagination).toBeDefined();
+
+    // Get specific comment
+    await request(app.getHttpServer())
+      .get(`/tasks/${taskId}/comments/${memberCommentId}`)
+      .set('Authorization', `Bearer ${owner.accessToken}`)
+      .expect(200);
+
+    // Member cannot update owner's comment
+    await request(app.getHttpServer())
+      .patch(`/tasks/${taskId}/comments/${ownerCommentId}`)
+      .set('Authorization', `Bearer ${member.accessToken}`)
+      .send({ content: 'Malicious update' })
+      .expect(403);
+
+    // Member can update own comment
+    const modifiedMemberCommentResponse = await request(app.getHttpServer())
+      .patch(`/tasks/${taskId}/comments/${memberCommentId}`)
+      .set('Authorization', `Bearer ${member.accessToken}`)
+      .send({ content: 'Updated member comment' })
+      .expect(200);
+    const modifiedCommentBody = modifiedMemberCommentResponse.body as IComment;
+    expect(modifiedCommentBody.content).toBe('Updated member comment');
+
+    // Owner can update member's comment
+    await request(app.getHttpServer())
+      .patch(`/tasks/${taskId}/comments/${memberCommentId}`)
+      .set('Authorization', `Bearer ${owner.accessToken}`)
+      .send({ content: 'Owner updated member comment' })
+      .expect(200);
+
+    // Member cannot delete owner's comment
+    await request(app.getHttpServer())
+      .delete(`/tasks/${taskId}/comments/${ownerCommentId}`)
+      .set('Authorization', `Bearer ${member.accessToken}`)
+      .expect(403);
+
+    // Member can delete own comment
+    const deleteResponse = await request(app.getHttpServer())
+      .delete(`/tasks/${taskId}/comments/${memberCommentId}`)
+      .set('Authorization', `Bearer ${member.accessToken}`)
+      .expect(204);
+    expect(deleteResponse.body).toEqual({});
+
+    // Owner can delete any comment
+    const ownerDeleteResponse = await request(app.getHttpServer())
+      .delete(`/tasks/${taskId}/comments/${ownerCommentId}`)
+      .set('Authorization', `Bearer ${owner.accessToken}`)
+      .expect(204);
+    expect(ownerDeleteResponse.body).toEqual({});
+  });
 });
