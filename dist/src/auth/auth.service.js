@@ -44,15 +44,18 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = __importStar(require("bcrypt"));
 const users_service_1 = require("../users/users.service");
 let AuthService = class AuthService {
     usersService;
     jwtService;
-    constructor(usersService, jwtService) {
+    configService;
+    constructor(usersService, jwtService, configService) {
         this.usersService = usersService;
         this.jwtService = jwtService;
+        this.configService = configService;
     }
     async register(dto) {
         const existingUser = await this.usersService.findByEmail(dto.email);
@@ -64,13 +67,7 @@ let AuthService = class AuthService {
             email: dto.email,
             passwordHash,
         });
-        return {
-            accessToken: await this.signAccessToken(user.id, user.email),
-            user: {
-                id: user.id,
-                email: user.email,
-            },
-        };
+        return this.issueTokens(user.id, user.email);
     }
     async login(dto) {
         const user = await this.usersService.findByEmail(dto.email);
@@ -81,22 +78,66 @@ let AuthService = class AuthService {
         if (!passwordValid) {
             throw new common_1.UnauthorizedException('Invalid email or password');
         }
+        return this.issueTokens(user.id, user.email);
+    }
+    async refresh(dto) {
+        const payload = await this.verifyRefreshToken(dto.refreshToken);
+        const user = await this.usersService.findById(payload.sub);
+        if (!user || !user.refreshTokenHash) {
+            throw new common_1.UnauthorizedException('Invalid refresh token');
+        }
+        const refreshTokenValid = await bcrypt.compare(dto.refreshToken, user.refreshTokenHash);
+        if (!refreshTokenValid) {
+            throw new common_1.UnauthorizedException('Invalid refresh token');
+        }
+        return this.issueTokens(user.id, user.email);
+    }
+    async logout(userId) {
+        await this.usersService.updateRefreshTokenHash(userId, null);
         return {
-            accessToken: await this.signAccessToken(user.id, user.email),
+            success: true,
+        };
+    }
+    async issueTokens(userId, email) {
+        const payload = { sub: userId, email };
+        const accessToken = await this.signAccessToken(payload);
+        const refreshToken = await this.signRefreshToken(payload);
+        const refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+        await this.usersService.updateRefreshTokenHash(userId, refreshTokenHash);
+        return {
+            accessToken,
+            refreshToken,
             user: {
-                id: user.id,
-                email: user.email,
+                id: userId,
+                email,
             },
         };
     }
-    signAccessToken(userId, email) {
-        return this.jwtService.signAsync({ sub: userId, email });
+    signAccessToken(payload) {
+        return this.jwtService.signAsync(payload);
+    }
+    signRefreshToken(payload) {
+        return this.jwtService.signAsync(payload, {
+            secret: this.configService.get('JWT_REFRESH_SECRET', 'dev-refresh-secret-change-me'),
+            expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN', '7d'),
+        });
+    }
+    async verifyRefreshToken(refreshToken) {
+        try {
+            return await this.jwtService.verifyAsync(refreshToken, {
+                secret: this.configService.get('JWT_REFRESH_SECRET', 'dev-refresh-secret-change-me'),
+            });
+        }
+        catch {
+            throw new common_1.UnauthorizedException('Invalid refresh token');
+        }
     }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [users_service_1.UsersService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        config_1.ConfigService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

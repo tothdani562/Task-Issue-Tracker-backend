@@ -26,6 +26,12 @@ let UsersService = class UsersService {
     create(data) {
         return this.prisma.user.create({ data });
     }
+    updateRefreshTokenHash(userId, refreshTokenHash) {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { refreshTokenHash },
+        });
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

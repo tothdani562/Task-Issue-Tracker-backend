@@ -6,4 +6,5 @@ export declare class UsersService {
     findByEmail(email: string): Promise<User | null>;
     findById(id: string): Promise<User | null>;
     create(data: Prisma.UserCreateInput): Promise<User>;
+    updateRefreshTokenHash(userId: string, refreshTokenHash: string | null): Promise<User>;
 }

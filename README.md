@@ -34,7 +34,8 @@ $ npm install
 ## Environment setup
 
 1. Copy `.env.example` to `.env`.
-2. Set a strong `JWT_SECRET` value.
+2. Set strong values for `JWT_SECRET` and `JWT_REFRESH_SECRET`.
+3. Configure `CORS_ORIGIN` to your frontend origin(s). Use comma-separated values for multiple origins.
 
 ## Local PostgreSQL (Docker)
 
@@ -78,6 +79,8 @@ $ npm run test:cov
 
 - `POST /auth/register`
 - `POST /auth/login`
+- `POST /auth/refresh`
+- `POST /auth/logout` (Bearer token required)
 - `GET /auth/me` (Bearer token required)
 
 ## Deployment
