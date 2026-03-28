@@ -93,7 +93,10 @@ export class AuthService {
     };
   }
 
-  private async issueTokens(userId: string, email: string): Promise<AuthResponse> {
+  private async issueTokens(
+    userId: string,
+    email: string,
+  ): Promise<AuthResponse> {
     const payload: JwtPayload = { sub: userId, email };
     const accessToken = await this.signAccessToken(payload);
     const refreshToken = await this.signRefreshToken(payload);

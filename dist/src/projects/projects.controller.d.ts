@@ -12,19 +12,19 @@ export declare class ProjectsController {
     constructor(projectsService: ProjectsService);
     private ok;
     create(user: AuthUser, dto: CreateProjectDto): Promise<ApiSuccessResponse<{
+        description: string | null;
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         ownerId: string;
     }>>;
     findAll(user: AuthUser): Promise<ApiSuccessResponse<{
+        description: string | null;
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         ownerId: string;
     }[]>>;
     findOne(user: AuthUser, id: string): Promise<ApiSuccessResponse<({
@@ -34,19 +34,19 @@ export declare class ProjectsController {
             userId: string;
         }[];
     } & {
+        description: string | null;
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         ownerId: string;
     }) | null>>;
     update(user: AuthUser, id: string, dto: UpdateProjectDto): Promise<ApiSuccessResponse<{
+        description: string | null;
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         ownerId: string;
     }>>;
     remove(user: AuthUser, id: string): Promise<ApiSuccessResponse<{

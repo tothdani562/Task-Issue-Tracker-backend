@@ -13,10 +13,10 @@ export declare class CommentsService {
             email: string;
         };
     } & {
+        content: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        content: string;
         taskId: string;
         authorId: string;
     }>;
@@ -27,10 +27,10 @@ export declare class CommentsService {
                 email: string;
             };
         } & {
+            content: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            content: string;
             taskId: string;
             authorId: string;
         })[];
@@ -50,10 +50,10 @@ export declare class CommentsService {
             email: string;
         };
     } & {
+        content: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        content: string;
         taskId: string;
         authorId: string;
     }>;
@@ -63,10 +63,10 @@ export declare class CommentsService {
             email: string;
         };
     } & {
+        content: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        content: string;
         taskId: string;
         authorId: string;
     }>;
@@ -76,10 +76,10 @@ export declare class CommentsService {
             email: string;
         };
     } & {
+        content: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        content: string;
         taskId: string;
         authorId: string;
     }>;

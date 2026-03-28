@@ -1,124 +1,274 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Task Manager API (NestJS + Prisma)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend API egy task/issue tracker rendszerhez.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Fobb modulok:
+- Auth (register/login/refresh/logout/me)
+- Projects (CRUD + tagsagkezeles)
+- Tasks (CRUD + szures + lapozas)
+- Comments (task kommentek CRUD)
 
-## Description
+## Technologia
+- Node.js
+- NestJS
+- Prisma ORM
+- PostgreSQL
+- JWT auth
+- Docker Compose (lokalis adatbazishoz)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Teljes Setup (lepesrol lepesre)
 
-## Project setup
+## 1. Elofeltetelek
+- Node.js 22+ (ajanlott LTS)
+- npm 10+
+- Docker Desktop + Docker Compose
 
+## 2. Projekt klonozasa
 ```bash
-$ npm install
+git clone <repo-url>
+cd Nest-Prisma
 ```
 
-## Environment setup
-
-1. Copy `.env.example` to `.env`.
-2. Set strong values for `JWT_SECRET` and `JWT_REFRESH_SECRET`.
-3. Configure `CORS_ORIGIN` to your frontend origin(s). Use comma-separated values for multiple origins.
-
-## Local PostgreSQL (Docker)
-
+## 3. Fuggosegek telepitese
 ```bash
-$ docker compose up -d
+npm install
 ```
 
-## Prisma migration
+## 4. Kornyezeti valtozok beallitasa
+Hozz letre egy `.env` fajlt a `.env.example` alapjan.
 
-```bash
-$ npm run prisma:migrate:dev -- --name init_auth
+Kotelezo valtozok:
+- `PORT`
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `JWT_EXPIRES_IN`
+- `JWT_REFRESH_SECRET`
+- `JWT_REFRESH_EXPIRES_IN`
+- `CORS_ORIGIN`
+
+Minimalis pelda:
+```env
+PORT=3000
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/nest_prisma_task_manager?schema=public"
+JWT_SECRET="replace-with-strong-secret"
+JWT_EXPIRES_IN="1h"
+JWT_REFRESH_SECRET="replace-with-strong-refresh-secret"
+JWT_REFRESH_EXPIRES_IN="7d"
+CORS_ORIGIN="http://localhost:3000"
 ```
 
-## Compile and run the project
-
+## 5. PostgreSQL inditasa Dockerrel
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+docker compose up -d
 ```
 
-## Run tests
-
+Ellenorzes:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker compose ps
 ```
 
-## Auth endpoints
-
-- `POST /auth/register`
-- `POST /auth/login`
-- `POST /auth/refresh`
-- `POST /auth/logout` (Bearer token required)
-- `GET /auth/me` (Bearer token required)
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+## 6. Prisma generalas es migracio
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run prisma:generate
+npm run prisma:migrate:dev -- --name init_auth
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 7. Alkalmazas inditasa
+Fejlesztoi mod:
+```bash
+npm run start:dev
+```
 
-## Resources
+Production build + futtatas:
+```bash
+npm run build
+npm run start:prod
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## 8. Dokumentacio ellenorzese
+- Swagger UI: `http://localhost:3000/docs`
+- OpenAPI JSON: `http://localhost:3000/docs-json`
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 9. Minosegi ellenorzesek
+```bash
+npm run lint:check
+npm run typecheck
+npm run test
+npm run test:e2e
+```
 
-## Support
+Release elott futtasd a checklistet is:
+- `RELEASE_CHECKLIST.md`
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Auth hasznalat roviden
+1. `POST /auth/register` vagy `POST /auth/login`
+2. `accessToken` megy `Authorization: Bearer <token>` headerben
+3. Lejart access token eseten `POST /auth/refresh`
+4. Kijelentkezes: `POST /auth/logout`
 
-## Stay in touch
+## API Dokumentacio
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Base URL
+- `http://localhost:3000`
 
-## License
+## Hitelesites
+- A vedett endpointok `Authorization: Bearer <accessToken>` headert varnak.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Endpoint lista (minden vegpont)
+
+| Method | Endpoint | Auth | Leiras |
+|---|---|---|---|
+| GET | `/` | No | Egyszeru health-check jellegu valasz (`Hello World!`) |
+| POST | `/auth/register` | No | Uj user regisztracio |
+| POST | `/auth/login` | No | Bejelentkezes |
+| POST | `/auth/refresh` | No | Token frissites refresh tokennel |
+| POST | `/auth/logout` | Yes | Kijelentkezes + refresh token hash torles |
+| GET | `/auth/me` | Yes | Aktualis bejelentkezett user payload |
+| POST | `/projects` | Yes | Projekt letrehozas |
+| GET | `/projects` | Yes | Projektek listazasa (owner/member) |
+| GET | `/projects/:id` | Yes | Egy projekt lekerdezese |
+| PATCH | `/projects/:id` | Yes | Projekt modositasa (owner) |
+| DELETE | `/projects/:id` | Yes | Projekt torlese (owner) |
+| POST | `/projects/:id/members` | Yes | Tag hozzaadasa projekthez (owner) |
+| DELETE | `/projects/:id/members/:memberUserId` | Yes | Tag eltavolitasa projektbol (owner) |
+| POST | `/projects/:projectId/tasks` | Yes | Task letrehozas projektben |
+| GET | `/projects/:projectId/tasks` | Yes | Task lista szuressel/lapozassal |
+| GET | `/projects/:projectId/tasks/:taskId` | Yes | Egy task lekerdezese |
+| PATCH | `/projects/:projectId/tasks/:taskId` | Yes | Task modositasa |
+| DELETE | `/projects/:projectId/tasks/:taskId` | Yes | Task torlese |
+| POST | `/tasks/:taskId/comments` | Yes | Komment letrehozas taskhoz |
+| GET | `/tasks/:taskId/comments` | Yes | Komment lista taskhoz (lapozhato) |
+| GET | `/tasks/:taskId/comments/:commentId` | Yes | Egy komment lekerdezese |
+| PATCH | `/tasks/:taskId/comments/:commentId` | Yes | Komment modositasa (author vagy project owner) |
+| DELETE | `/tasks/:taskId/comments/:commentId` | Yes | Komment torlese (author vagy project owner) |
+
+## Request body referencia
+
+### POST /auth/register
+```json
+{
+  "email": "user@example.com",
+  "password": "Password123"
+}
+```
+
+### POST /auth/login
+```json
+{
+  "email": "user@example.com",
+  "password": "Password123"
+}
+```
+
+### POST /auth/refresh
+```json
+{
+  "refreshToken": "<refresh_token>"
+}
+```
+
+### POST /projects
+```json
+{
+  "name": "My Project",
+  "description": "Optional project description"
+}
+```
+
+### PATCH /projects/:id
+```json
+{
+  "name": "Updated name",
+  "description": "Updated description"
+}
+```
+
+### POST /projects/:id/members
+```json
+{
+  "userId": "<user-uuid>"
+}
+```
+
+### POST /projects/:projectId/tasks
+```json
+{
+  "title": "Implement endpoint",
+  "description": "Optional",
+  "status": "TODO",
+  "priority": "HIGH",
+  "assignedUserId": "<user-uuid>",
+  "dueDate": "2031-01-01T00:00:00.000Z"
+}
+```
+
+### PATCH /projects/:projectId/tasks/:taskId
+```json
+{
+  "title": "Updated task",
+  "status": "IN_PROGRESS",
+  "priority": "MEDIUM"
+}
+```
+
+### GET /projects/:projectId/tasks query paramok
+- `status`: `TODO` | `IN_PROGRESS` | `DONE`
+- `priority`: `LOW` | `MEDIUM` | `HIGH`
+- `assigneeId`: UUID
+- `dueFrom`: ISO date string
+- `dueTo`: ISO date string
+- `sortBy`: `createdAt` | `dueDate` | `priority` | `status`
+- `sortOrder`: `asc` | `desc`
+- `page`: integer (min: 1)
+- `limit`: integer (1-100)
+
+### POST /tasks/:taskId/comments
+```json
+{
+  "content": "This task needs clarification"
+}
+```
+
+### PATCH /tasks/:taskId/comments/:commentId
+```json
+{
+  "content": "Updated comment text"
+}
+```
+
+### GET /tasks/:taskId/comments query paramok
+- `page`: integer (min: 1)
+- `limit`: integer (1-100)
+
+## Response forma
+
+Tobb endpoint ezt hasznalja:
+```json
+{
+  "success": true,
+  "data": {}
+}
+```
+
+Hibak globalisan:
+```json
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "...",
+  "path": "/requested/path",
+  "timestamp": "2026-03-28T12:00:00.000Z"
+}
+```
+
+## Hasznos script parancsok
+- `npm run start:dev` - fejlesztoi futtas
+- `npm run build` - build
+- `npm run start:prod` - production futtas
+- `npm run lint:check` - lint ellenorzes
+- `npm run typecheck` - TS typecheck
+- `npm run test` - unit test
+- `npm run test:e2e` - e2e test
+- `npm run prisma:generate` - prisma client generalas
+- `npm run prisma:migrate:dev` - lokalis migracio
+- `npm run prisma:studio` - Prisma Studio

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@nestjs/core");
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const swagger_1 = require("@nestjs/swagger");
 const helmet_1 = __importDefault(require("helmet"));
 const app_module_1 = require("./app.module");
 const global_exception_filter_1 = require("./common/filters/global-exception.filter");
@@ -30,6 +31,23 @@ async function bootstrap() {
         forbidNonWhitelisted: true,
     }));
     app.useGlobalFilters(new global_exception_filter_1.GlobalExceptionFilter());
+    const swaggerConfig = new swagger_1.DocumentBuilder()
+        .setTitle('Task Manager API')
+        .setDescription('Task and issue tracker backend API documentation')
+        .setVersion('1.0.0')
+        .addBearerAuth({
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+    }, 'bearer')
+        .build();
+    const swaggerDocument = swagger_1.SwaggerModule.createDocument(app, swaggerConfig);
+    swagger_1.SwaggerModule.setup('docs', app, swaggerDocument, {
+        swaggerOptions: {
+            persistAuthorization: true,
+            displayRequestDuration: true,
+        },
+    });
     await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();

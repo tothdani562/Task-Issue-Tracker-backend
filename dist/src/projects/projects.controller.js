@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProjectsController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const add_project_member_dto_1 = require("./dto/add-project-member.dto");
@@ -60,6 +61,9 @@ let ProjectsController = class ProjectsController {
 exports.ProjectsController = ProjectsController;
 __decorate([
     (0, common_1.Post)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Create a new project' }),
+    (0, swagger_1.ApiCreatedResponse)({ description: 'Project created successfully' }),
+    (0, swagger_1.ApiUnauthorizedResponse)({ description: 'Missing or invalid access token' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -68,6 +72,10 @@ __decorate([
 ], ProjectsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'List projects where current user is owner or member',
+    }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Projects list returned' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -75,6 +83,10 @@ __decorate([
 ], ProjectsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get one project by ID' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Project UUID' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Project returned' }),
+    (0, swagger_1.ApiForbiddenResponse)({ description: 'No access to this project' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
@@ -83,6 +95,10 @@ __decorate([
 ], ProjectsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update project details (owner only)' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Project UUID' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Project updated successfully' }),
+    (0, swagger_1.ApiForbiddenResponse)({ description: 'Only project owner can update' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(2, (0, common_1.Body)()),
@@ -92,6 +108,10 @@ __decorate([
 ], ProjectsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete a project (owner only)' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Project UUID' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Project deleted successfully' }),
+    (0, swagger_1.ApiForbiddenResponse)({ description: 'Only project owner can delete' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
@@ -100,6 +120,10 @@ __decorate([
 ], ProjectsController.prototype, "remove", null);
 __decorate([
     (0, common_1.Post)(':id/members'),
+    (0, swagger_1.ApiOperation)({ summary: 'Add member to project (owner only)' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Project UUID' }),
+    (0, swagger_1.ApiCreatedResponse)({ description: 'Member added to project' }),
+    (0, swagger_1.ApiForbiddenResponse)({ description: 'Only project owner can add member' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(2, (0, common_1.Body)()),
@@ -109,6 +133,11 @@ __decorate([
 ], ProjectsController.prototype, "addMember", null);
 __decorate([
     (0, common_1.Delete)(':id/members/:memberUserId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Remove member from project (owner only)' }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Project UUID' }),
+    (0, swagger_1.ApiParam)({ name: 'memberUserId', description: 'Member user UUID' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Member removed from project' }),
+    (0, swagger_1.ApiForbiddenResponse)({ description: 'Only project owner can remove member' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(2, (0, common_1.Param)('memberUserId', common_1.ParseUUIDPipe)),
@@ -117,6 +146,8 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ProjectsController.prototype, "removeMember", null);
 exports.ProjectsController = ProjectsController = __decorate([
+    (0, swagger_1.ApiTags)('projects'),
+    (0, swagger_1.ApiBearerAuth)('bearer'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('projects'),
     __metadata("design:paramtypes", [projects_service_1.ProjectsService])

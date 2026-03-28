@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TasksController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const create_task_dto_1 = require("./dto/create-task.dto");
@@ -52,6 +53,11 @@ let TasksController = class TasksController {
 exports.TasksController = TasksController;
 __decorate([
     (0, common_1.Post)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Create task in a project' }),
+    (0, swagger_1.ApiParam)({ name: 'projectId', description: 'Project UUID' }),
+    (0, swagger_1.ApiCreatedResponse)({ description: 'Task created successfully' }),
+    (0, swagger_1.ApiForbiddenResponse)({ description: 'No project access' }),
+    (0, swagger_1.ApiUnauthorizedResponse)({ description: 'Missing or invalid access token' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('projectId', common_1.ParseUUIDPipe)),
     __param(2, (0, common_1.Body)()),
@@ -61,6 +67,41 @@ __decorate([
 ], TasksController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'List tasks in project with filtering and pagination',
+    }),
+    (0, swagger_1.ApiParam)({ name: 'projectId', description: 'Project UUID' }),
+    (0, swagger_1.ApiQuery)({ name: 'status', required: false, description: 'Task status' }),
+    (0, swagger_1.ApiQuery)({ name: 'priority', required: false, description: 'Task priority' }),
+    (0, swagger_1.ApiQuery)({
+        name: 'assigneeId',
+        required: false,
+        description: 'Assignee user UUID',
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'dueFrom',
+        required: false,
+        description: 'Lower due-date bound (ISO date)',
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'dueTo',
+        required: false,
+        description: 'Upper due-date bound (ISO date)',
+    }),
+    (0, swagger_1.ApiQuery)({ name: 'sortBy', required: false, description: 'Sort field' }),
+    (0, swagger_1.ApiQuery)({
+        name: 'sortOrder',
+        required: false,
+        description: 'Sort direction (asc or desc)',
+    }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, description: 'Page number (>=1)' }),
+    (0, swagger_1.ApiQuery)({
+        name: 'limit',
+        required: false,
+        description: 'Page size (1-100)',
+    }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Paginated task list returned' }),
+    (0, swagger_1.ApiForbiddenResponse)({ description: 'No project access' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('projectId', common_1.ParseUUIDPipe)),
     __param(2, (0, common_1.Query)()),
@@ -70,6 +111,11 @@ __decorate([
 ], TasksController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':taskId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get one task in project' }),
+    (0, swagger_1.ApiParam)({ name: 'projectId', description: 'Project UUID' }),
+    (0, swagger_1.ApiParam)({ name: 'taskId', description: 'Task UUID' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Task returned' }),
+    (0, swagger_1.ApiForbiddenResponse)({ description: 'No project access' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('projectId', common_1.ParseUUIDPipe)),
     __param(2, (0, common_1.Param)('taskId', common_1.ParseUUIDPipe)),
@@ -79,6 +125,11 @@ __decorate([
 ], TasksController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':taskId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update task in project' }),
+    (0, swagger_1.ApiParam)({ name: 'projectId', description: 'Project UUID' }),
+    (0, swagger_1.ApiParam)({ name: 'taskId', description: 'Task UUID' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Task updated successfully' }),
+    (0, swagger_1.ApiForbiddenResponse)({ description: 'No project access' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('projectId', common_1.ParseUUIDPipe)),
     __param(2, (0, common_1.Param)('taskId', common_1.ParseUUIDPipe)),
@@ -89,6 +140,11 @@ __decorate([
 ], TasksController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':taskId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete task in project' }),
+    (0, swagger_1.ApiParam)({ name: 'projectId', description: 'Project UUID' }),
+    (0, swagger_1.ApiParam)({ name: 'taskId', description: 'Task UUID' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'Task deleted successfully' }),
+    (0, swagger_1.ApiForbiddenResponse)({ description: 'No project access' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('projectId', common_1.ParseUUIDPipe)),
     __param(2, (0, common_1.Param)('taskId', common_1.ParseUUIDPipe)),
@@ -97,6 +153,8 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], TasksController.prototype, "remove", null);
 exports.TasksController = TasksController = __decorate([
+    (0, swagger_1.ApiTags)('tasks'),
+    (0, swagger_1.ApiBearerAuth)('bearer'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('projects/:projectId/tasks'),
     __metadata("design:paramtypes", [tasks_service_1.TasksService])

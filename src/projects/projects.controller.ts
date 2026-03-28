@@ -9,6 +9,16 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthUser } from '../auth/types/auth-user.type';
@@ -22,6 +32,8 @@ type ApiSuccessResponse<T> = {
   data: T;
 };
 
+@ApiTags('projects')
+@ApiBearerAuth('bearer')
 @UseGuards(JwtAuthGuard)
 @Controller('projects')
 export class ProjectsController {
@@ -32,18 +44,29 @@ export class ProjectsController {
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create a new project' })
+  @ApiCreatedResponse({ description: 'Project created successfully' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid access token' })
   async create(@CurrentUser() user: AuthUser, @Body() dto: CreateProjectDto) {
     const project = await this.projectsService.create(user.userId, dto);
     return this.ok(project);
   }
 
   @Get()
+  @ApiOperation({
+    summary: 'List projects where current user is owner or member',
+  })
+  @ApiOkResponse({ description: 'Projects list returned' })
   async findAll(@CurrentUser() user: AuthUser) {
     const projects = await this.projectsService.findAllForUser(user.userId);
     return this.ok(projects);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get one project by ID' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiOkResponse({ description: 'Project returned' })
+  @ApiForbiddenResponse({ description: 'No access to this project' })
   async findOne(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -53,6 +76,10 @@ export class ProjectsController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update project details (owner only)' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiOkResponse({ description: 'Project updated successfully' })
+  @ApiForbiddenResponse({ description: 'Only project owner can update' })
   async update(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -63,6 +90,10 @@ export class ProjectsController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a project (owner only)' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiOkResponse({ description: 'Project deleted successfully' })
+  @ApiForbiddenResponse({ description: 'Only project owner can delete' })
   async remove(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -72,6 +103,10 @@ export class ProjectsController {
   }
 
   @Post(':id/members')
+  @ApiOperation({ summary: 'Add member to project (owner only)' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiCreatedResponse({ description: 'Member added to project' })
+  @ApiForbiddenResponse({ description: 'Only project owner can add member' })
   async addMember(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -82,6 +117,11 @@ export class ProjectsController {
   }
 
   @Delete(':id/members/:memberUserId')
+  @ApiOperation({ summary: 'Remove member from project (owner only)' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiParam({ name: 'memberUserId', description: 'Member user UUID' })
+  @ApiOkResponse({ description: 'Member removed from project' })
+  @ApiForbiddenResponse({ description: 'Only project owner can remove member' })
   async removeMember(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseUUIDPipe) id: string,

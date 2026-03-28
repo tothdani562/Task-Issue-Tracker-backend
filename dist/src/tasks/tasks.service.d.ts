@@ -10,26 +10,26 @@ export declare class TasksService {
     private readonly usersService;
     constructor(prisma: PrismaService, projectsService: ProjectsService, usersService: UsersService);
     create(projectId: string, userId: string, dto: CreateTaskDto): Promise<{
+        description: string | null;
+        status: import("@prisma/client").$Enums.TaskStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         projectId: string;
         title: string;
-        status: import("@prisma/client").$Enums.TaskStatus;
         priority: import("@prisma/client").$Enums.TaskPriority;
         dueDate: Date | null;
         assignedUserId: string | null;
     }>;
     findAllForProject(projectId: string, userId: string, query: ListTasksQueryDto): Promise<{
         items: {
+            description: string | null;
+            status: import("@prisma/client").$Enums.TaskStatus;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            description: string | null;
             projectId: string;
             title: string;
-            status: import("@prisma/client").$Enums.TaskStatus;
             priority: import("@prisma/client").$Enums.TaskPriority;
             dueDate: Date | null;
             assignedUserId: string | null;
@@ -42,25 +42,25 @@ export declare class TasksService {
         };
     }>;
     findOneForProject(projectId: string, taskId: string, userId: string): Promise<{
+        description: string | null;
+        status: import("@prisma/client").$Enums.TaskStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         projectId: string;
         title: string;
-        status: import("@prisma/client").$Enums.TaskStatus;
         priority: import("@prisma/client").$Enums.TaskPriority;
         dueDate: Date | null;
         assignedUserId: string | null;
     }>;
     updateForProject(projectId: string, taskId: string, userId: string, dto: UpdateTaskDto): Promise<{
+        description: string | null;
+        status: import("@prisma/client").$Enums.TaskStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         projectId: string;
         title: string;
-        status: import("@prisma/client").$Enums.TaskStatus;
         priority: import("@prisma/client").$Enums.TaskPriority;
         dueDate: Date | null;
         assignedUserId: string | null;

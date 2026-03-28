@@ -8,19 +8,19 @@ export declare class ProjectsService {
     private readonly usersService;
     constructor(prisma: PrismaService, usersService: UsersService);
     create(userId: string, dto: CreateProjectDto): Promise<{
+        description: string | null;
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         ownerId: string;
     }>;
     findAllForUser(userId: string): import("@prisma/client").Prisma.PrismaPromise<{
+        description: string | null;
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         ownerId: string;
     }[]>;
     findOneForUser(projectId: string, userId: string): Promise<({
@@ -30,19 +30,19 @@ export declare class ProjectsService {
             userId: string;
         }[];
     } & {
+        description: string | null;
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         ownerId: string;
     }) | null>;
     update(projectId: string, userId: string, dto: UpdateProjectDto): Promise<{
+        description: string | null;
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         ownerId: string;
     }>;
     remove(projectId: string, userId: string): Promise<void>;

@@ -12,26 +12,26 @@ export declare class TasksController {
     constructor(tasksService: TasksService);
     private ok;
     create(user: AuthUser, projectId: string, dto: CreateTaskDto): Promise<ApiSuccessResponse<{
+        description: string | null;
+        status: import("@prisma/client").$Enums.TaskStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         projectId: string;
         title: string;
-        status: import("@prisma/client").$Enums.TaskStatus;
         priority: import("@prisma/client").$Enums.TaskPriority;
         dueDate: Date | null;
         assignedUserId: string | null;
     }>>;
     findAll(user: AuthUser, projectId: string, query: ListTasksQueryDto): Promise<ApiSuccessResponse<{
         items: {
+            description: string | null;
+            status: import("@prisma/client").$Enums.TaskStatus;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            description: string | null;
             projectId: string;
             title: string;
-            status: import("@prisma/client").$Enums.TaskStatus;
             priority: import("@prisma/client").$Enums.TaskPriority;
             dueDate: Date | null;
             assignedUserId: string | null;
@@ -44,25 +44,25 @@ export declare class TasksController {
         };
     }>>;
     findOne(user: AuthUser, projectId: string, taskId: string): Promise<ApiSuccessResponse<{
+        description: string | null;
+        status: import("@prisma/client").$Enums.TaskStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         projectId: string;
         title: string;
-        status: import("@prisma/client").$Enums.TaskStatus;
         priority: import("@prisma/client").$Enums.TaskPriority;
         dueDate: Date | null;
         assignedUserId: string | null;
     }>>;
     update(user: AuthUser, projectId: string, taskId: string, dto: UpdateTaskDto): Promise<ApiSuccessResponse<{
+        description: string | null;
+        status: import("@prisma/client").$Enums.TaskStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         projectId: string;
         title: string;
-        status: import("@prisma/client").$Enums.TaskStatus;
         priority: import("@prisma/client").$Enums.TaskPriority;
         dueDate: Date | null;
         assignedUserId: string | null;
